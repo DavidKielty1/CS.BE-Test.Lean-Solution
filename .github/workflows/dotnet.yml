@@ -25,8 +25,11 @@ jobs:
       - name: Build Solution
         run: dotnet build API.sln --configuration Debug --no-restore
 
-      - name: Run Tests with Coverage
-        run: dotnet test API.sln --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:Threshold=80 /p:ThresholdType=line,branch,method
+      - name: Run Tests with 80% Line Coverage
+        run: dotnet test API.sln --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:Threshold=80 /p:ThresholdType=line
+
+      - name: Run Tests with 80% Branch Coverage
+        run: dotnet test API.sln --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:Threshold=80 /p:ThresholdType=branch
 
       - name: Verify Test Coverage
         run: |
