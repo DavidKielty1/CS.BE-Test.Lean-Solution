@@ -25,6 +25,9 @@ jobs:
       - name: Build Solution
         run: dotnet build API.sln --configuration Debug --no-restore
 
+      - name: Ensure Coverage Directory Exists
+        run: mkdir -p coverage
+
       - name: Run Tests with Coverage
         run: dotnet test Tests/API.Tests/API.Tests.csproj --no-build --verbosity normal -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura -p:CoverletOutput=./coverage/cobertura.xml
 
