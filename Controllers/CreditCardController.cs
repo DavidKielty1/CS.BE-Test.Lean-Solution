@@ -5,6 +5,7 @@ using API.Services;
 using API.Models.Responses;
 using API.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
+using Prometheus;
 
 namespace API.Controllers
 {
@@ -19,6 +20,17 @@ namespace API.Controllers
     {
         private readonly ICreditCardService _service;
         private readonly ILogger<CreditCardController> _logger;
+
+        // Define metrics
+        private static readonly Counter RecommendationsRequested =
+            Metrics.CreateCounter("creditcard_recommendations_requested", "Number of credit card recommendations requested");
+
+        private static readonly Counter CacheHits =
+            Metrics.CreateCounter("creditcard_cache_hits", "Number of cache hits for credit card recommendations");
+
+        private static readonly Histogram ProcessingTime =
+            Metrics.CreateHistogram("creditcard_processing_duration_seconds",
+                "Time taken to process credit card recommendations");
 
         public CreditCardController(ICreditCardService service, ILogger<CreditCardController> logger)
         {
@@ -42,34 +54,44 @@ namespace API.Controllers
         [SwaggerResponse(503, "Service unavailable")]
         public async Task<IActionResult> ProcessCreditCard([FromBody] CreditCardRequest request)
         {
-            try
+            using (ProcessingTime.NewTimer())
             {
-                if (!ModelState.IsValid)
+                try
                 {
-                    return BadRequest("The request contained invalid parameters");
+                    RecommendationsRequested.Inc();
+
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest("The request contained invalid parameters");
+                    }
+
+                    var (cards, fromCache) = await _service.GetRecommendations(request);
+
+                    if (fromCache)
+                    {
+                        CacheHits.Inc();
+                    }
+
+                    if (!cards.Any())
+                    {
+                        return BadRequest("No credit card recommendations found");
+                    }
+
+                    return Ok(new CreditCardResponse
+                    {
+                        Message = fromCache ? "Retrieved from cache" : "Fetched from APIs",
+                        Cards = cards
+                    });
                 }
-
-                var (cards, fromCache) = await _service.GetRecommendations(request);
-
-                if (!cards.Any())
+                catch (TimeoutException)
                 {
-                    return BadRequest("No credit card recommendations found");
+                    return StatusCode(503, "Service unavailable");
                 }
-
-                return Ok(new CreditCardResponse
+                catch (Exception ex)
                 {
-                    Message = fromCache ? "Retrieved from cache" : "Fetched from APIs",
-                    Cards = cards
-                });
-            }
-            catch (TimeoutException)
-            {
-                return StatusCode(503, "Service unavailable");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing credit card request");
-                return StatusCode(500, "Internal server error");
+                    _logger.LogError(ex, "Error processing credit card request");
+                    return StatusCode(500, "Internal server error");
+                }
             }
         }
     }
