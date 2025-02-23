@@ -39,7 +39,7 @@ jobs:
 
       - name: Verify Test Coverage
         run: |
-          COVERAGE_FILE=$(find Tests/API.Tests/TestResults -name "coverage.cobertura.xml" | head -n 1)
+          COVERAGE_FILE=$(find Tests/API.Tests/TestResults -type f -name "coverage.cobertura.xml" | tail -n 1)
           if [ -z "$COVERAGE_FILE" ]; then
             echo "❌ Coverage file not found. Failing build."
             exit 1
@@ -56,7 +56,7 @@ jobs:
       - name: Generate Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
         with:
-          reports: "TestResults/Coverage/coverage.cobertura.xml"
+          reports: "Tests/API.Tests/TestResults/**/coverage.cobertura.xml"
           targetdir: "coveragereport"
           reporttypes: "HtmlInline;Cobertura"
 
