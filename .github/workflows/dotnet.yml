@@ -28,13 +28,17 @@ jobs:
       - name: Run Tests with Coverage
         run: dotnet test API.sln --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=./TestResults/Coverage/coverage.cobertura.xml /p:Threshold=80 /p:ThresholdType=line /p:Exclude="[API]*Program.cs" /p:ExcludeByFile="**/RedisSettings.cs"
 
+      - name: Debug List All Files After Tests
+        run: ls -R
+
       - name: Verify Test Coverage
         run: |
-          COVERAGE_FILE=$(find Tests/API.Tests/TestResults -name "coverage.cobertura.xml" | head -n 1)
+          COVERAGE_FILE=$(find . -name "coverage.cobertura.xml" | head -n 1)
           if [ -z "$COVERAGE_FILE" ]; then
             echo "Coverage file not found. Failing build."
             exit 1
           fi
+          echo "Found coverage file at $COVERAGE_FILE"
           COVERAGE=$(grep -oP '(?<=<coverage line-rate=")[0-9.]+' "$COVERAGE_FILE")
           if (( $(echo "$COVERAGE < 0.8" | bc -l) )); then
             echo "Test coverage ($COVERAGE) is below 80%. Failing the build."
