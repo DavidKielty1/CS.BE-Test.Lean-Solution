@@ -1,6 +1,7 @@
 using API.Models;
 using API.Models.Common;
 using API.Services.Interfaces;
+using StackExchange.Redis;
 
 namespace API.Services
 {
@@ -26,20 +27,41 @@ namespace API.Services
 
         public async Task<(List<CreditCardRecommendation> cards, bool fromCache)> GetRecommendations(CreditCardRequest request)
         {
-            // Step 1: Try to get cached results first
-            var cached = await _cache.GetRequestResults(request.Name, request.Score, request.Salary);
-            if (cached?.Any() == true)
+            try
             {
-                return (cached, true);
+                // Step 1: Try to get cached results first
+                var cached = await _cache.GetRequestResults(request.Name, request.Score, request.Salary);
+                if (cached?.Any() == true)
+                {
+                    return (cached, true);
+                }
+            }
+            catch (RedisConnectionException ex)
+            {
+                _logger.LogWarning(ex, "Redis cache unavailable, falling back to direct API calls");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error accessing cache, falling back to direct API calls");
             }
 
             // Step 2: Get fresh recommendations from providers
             var cards = await _cardProvider.GetAllRecommendations(request, default);
             if (cards.Any())
             {
-                // Step 3: Calculate scores and cache the results
+                // Step 3: Calculate scores
                 var scored = CardScoreCalculator.CalculateNormalizedScores(cards, _logger);
-                await _cache.StoreRequestResults(request.Name, request.Score, request.Salary, scored);
+
+                try
+                {
+                    // Try to cache the results, but don't fail if cache is unavailable
+                    await _cache.StoreRequestResults(request.Name, request.Score, request.Salary, scored);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to store results in cache");
+                }
+
                 return (scored, false);
             }
 

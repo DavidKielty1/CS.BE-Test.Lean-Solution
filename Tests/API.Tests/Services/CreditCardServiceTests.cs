@@ -4,6 +4,7 @@ using API.Services;
 using API.Services.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
+using StackExchange.Redis;
 using Xunit;
 
 namespace API.Tests.Services;
@@ -67,5 +68,112 @@ public class CreditCardServiceTests
         Assert.False(fromCache);
         Assert.Equal(providerCards.Count, cards.Count);
         _mockCache.Verify(x => x.StoreRequestResults(request.Name, request.Score, request.Salary, It.IsAny<List<CreditCardRecommendation>>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetRecommendations_WhenCacheReadFails_FallsBackToProviders()
+    {
+        // Arrange
+        var request = new CreditCardRequest { Name = "Test", Score = 700, Salary = 30000 };
+        var providerCards = new List<CreditCardRecommendation>
+        {
+            new() { Name = "New Card", Provider = "CSCards", Apr = 15.0m, CardScore = 8.0m }
+        };
+
+        _mockCache.Setup(x => x.GetRequestResults(request.Name, request.Score, request.Salary))
+            .ThrowsAsync(new RedisConnectionException(ConnectionFailureType.UnableToConnect, "Connection failed"));
+
+        _mockCardProvider.Setup(x => x.GetAllRecommendations(request, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(providerCards);
+
+        // Act
+        var (cards, fromCache) = await _service.GetRecommendations(request);
+
+        // Assert
+        Assert.False(fromCache);
+        Assert.Equal(providerCards.Count, cards.Count);
+        Assert.Equal(providerCards[0].Name, cards[0].Name);
+
+        // Verify warning was logged
+        _mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Redis cache unavailable")),
+                It.IsAny<RedisConnectionException>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetRecommendations_WhenCacheWriteFails_ContinuesSuccessfully()
+    {
+        // Arrange
+        var request = new CreditCardRequest { Name = "Test", Score = 700, Salary = 30000 };
+        var providerCards = new List<CreditCardRecommendation>
+        {
+            new() { Name = "New Card", Provider = "CSCards", Apr = 15.0m, CardScore = 8.0m }
+        };
+
+        _mockCache.Setup(x => x.GetRequestResults(request.Name, request.Score, request.Salary))
+            .ReturnsAsync((List<CreditCardRecommendation>?)null);
+
+        _mockCache.Setup(x => x.StoreRequestResults(
+                request.Name, request.Score, request.Salary, It.IsAny<List<CreditCardRecommendation>>()))
+            .ThrowsAsync(new RedisConnectionException(ConnectionFailureType.UnableToConnect, "Connection failed"));
+
+        _mockCardProvider.Setup(x => x.GetAllRecommendations(request, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(providerCards);
+
+        // Act
+        var (cards, fromCache) = await _service.GetRecommendations(request);
+
+        // Assert
+        Assert.False(fromCache);
+        Assert.Equal(providerCards.Count, cards.Count);
+
+        // Verify warning was logged
+        _mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Failed to store results in cache")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetRecommendations_WhenCacheThrowsUnexpectedError_FallsBackToProviders()
+    {
+        // Arrange
+        var request = new CreditCardRequest { Name = "Test", Score = 700, Salary = 30000 };
+        var providerCards = new List<CreditCardRecommendation>
+        {
+            new() { Name = "New Card", Provider = "CSCards", Apr = 15.0m, CardScore = 8.0m }
+        };
+
+        _mockCache.Setup(x => x.GetRequestResults(request.Name, request.Score, request.Salary))
+            .ThrowsAsync(new InvalidOperationException("Unexpected cache error"));
+
+        _mockCardProvider.Setup(x => x.GetAllRecommendations(request, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(providerCards);
+
+        // Act
+        var (cards, fromCache) = await _service.GetRecommendations(request);
+
+        // Assert
+        Assert.False(fromCache);
+        Assert.Equal(providerCards.Count, cards.Count);
+
+        // Verify error was logged
+        _mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Unexpected error accessing cache")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 }

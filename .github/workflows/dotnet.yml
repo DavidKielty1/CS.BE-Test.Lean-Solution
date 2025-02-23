@@ -11,30 +11,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 8.0.x
 
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Restore Dependencies
+        run: dotnet restore API.sln
 
-      - name: Build
-        run: dotnet build --no-restore
+      - name: Build Solution
+        run: dotnet build API.sln --configuration Debug --no-restore
 
-      - name: Test with coverage
-        run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:Threshold=80 /p:ThresholdType=line,branch,method
+      - name: List Projects in Solution (Debugging)
+        run: dotnet sln list
 
-      - name: Generate coverage report
+      - name: Run Tests with Coverage
+        run: dotnet test API.sln --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:Threshold=80 /p:ThresholdType=line,branch,method
+
+      - name: Generate Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
         with:
           reports: "**/coverage.cobertura.xml"
           targetdir: "coveragereport"
           reporttypes: "HtmlInline;Cobertura"
 
-      - name: Upload coverage report
+      - name: Upload Coverage Report
         uses: actions/upload-artifact@v3
         with:
           name: CoverageReport
