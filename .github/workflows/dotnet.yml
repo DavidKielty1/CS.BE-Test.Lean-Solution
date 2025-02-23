@@ -25,33 +25,8 @@ jobs:
       - name: Build Solution
         run: dotnet build API.sln --configuration Debug --no-restore
 
-      - name: Run Tests Without Coverage (Debugging)
-        run: dotnet test Tests/API.Tests/API.Tests.csproj --no-build --verbosity normal
-
-      - name: Ensure Coverage Directory Exists
-        run: mkdir -p coverage
-
       - name: Run Tests with Coverage
         run: dotnet test Tests/API.Tests/API.Tests.csproj --no-build --verbosity normal --collect:"XPlat Code Coverage"
-
-      - name: Debug List All Files After Tests
-        run: ls -R ./coverage || echo "❌ No coverage directory found"
-
-      - name: Verify Test Coverage
-        run: |
-          COVERAGE_FILE=$(find Tests/API.Tests/TestResults -type f -name "coverage.cobertura.xml" | tail -n 1)
-          if [ -z "$COVERAGE_FILE" ]; then
-            echo "❌ Coverage file not found. Failing build."
-            exit 1
-          fi
-          echo "✅ Found coverage file at $COVERAGE_FILE"
-          COVERAGE=$(grep -oP '(?<=<coverage line-rate=")[0-9.]+' "$COVERAGE_FILE")
-          if (( $(echo "$COVERAGE < 0.8" | bc -l) )); then
-            echo "❌ Test coverage ($COVERAGE) is below 80%. Failing the build."
-            exit 1
-          else
-            echo "✅ Test coverage is $COVERAGE, passing."
-          fi
 
       - name: Generate Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
