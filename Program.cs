@@ -33,6 +33,10 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API for retrieving and scoring credit card recommendations from multiple providers"
     });
 
+    // Hide schemas for error responses
+    c.UseOneOfForPolymorphism();
+    c.CustomSchemaIds(type => type.FullName);
+
     // Include XML comments
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);

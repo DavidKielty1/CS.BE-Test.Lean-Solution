@@ -4,6 +4,7 @@ using API.Models.Common;
 using API.Services;
 using API.Models.Responses;
 using API.Services.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Controllers
 {
@@ -12,7 +13,7 @@ namespace API.Controllers
     /// Handles HTTP requests, caching, and orchestrates the recommendation process.
     /// </summary>
     [ApiController]
-    [Route("api/credit-cards")]
+    [Route("creditcards")]
     [Produces("application/json")]
     public class CreditCardController : ControllerBase
     {
@@ -31,26 +32,28 @@ namespace API.Controllers
         /// <param name="request">Customer details for credit card assessment</param>
         /// <returns>List of recommended credit cards with eligibility scores</returns>
         /// <response code="200">Returns the credit card recommendations</response>
-        /// <response code="400">If the request is invalid or no cards found</response>
-        /// <response code="503">If the service is temporarily unavailable</response>
-        [HttpPost("process")]
+        /// <response code="400">The request contained invalid parameters</response>
+        /// <response code="503">Service unavailable</response>
+        [HttpPost]
         [ProducesResponseType(typeof(CreditCardResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        [SwaggerResponse(400, "The request contained invalid parameters")]
+        [SwaggerResponse(503, "Service unavailable")]
         public async Task<IActionResult> ProcessCreditCard([FromBody] CreditCardRequest request)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
-                    return BadRequest(new ErrorResponse { Message = ModelState.Values.First().Errors.First().ErrorMessage });
+                    return BadRequest("The request contained invalid parameters");
                 }
 
                 var (cards, fromCache) = await _service.GetRecommendations(request);
 
                 if (!cards.Any())
                 {
-                    return BadRequest(new ErrorResponse { Message = "No credit card recommendations found" });
+                    return BadRequest("No credit card recommendations found");
                 }
 
                 return Ok(new CreditCardResponse
@@ -61,12 +64,12 @@ namespace API.Controllers
             }
             catch (TimeoutException)
             {
-                return StatusCode(503, new ErrorResponse { Message = "Service unavailable" });
+                return StatusCode(503, "Service unavailable");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing credit card request");
-                return StatusCode(500, new ErrorResponse { Message = "Internal server error" });
+                return StatusCode(500, "Internal server error");
             }
         }
     }

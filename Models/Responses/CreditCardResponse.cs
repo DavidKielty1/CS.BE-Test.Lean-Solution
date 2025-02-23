@@ -1,4 +1,5 @@
 using API.Models.Common;
+using System.Text.Json.Serialization;
 
 namespace API.Models.Responses
 {
@@ -7,26 +8,42 @@ namespace API.Models.Responses
     /// </summary>
     /// <example>
     /// {
-    ///     "message": "Fetched from APIs",
+    ///     [Dev: "message": "Fetched from APIs",  // or "Retrieved from cache"]
     ///     "cards": [
     ///         {
-    ///             "provider": "CSCards",
-    ///             "name": "Super Saver Card",
-    ///             "apr": 19.5,
-    ///             "cardScore": 0.85
+    ///             "provider": "ScoredCards",    // Card provider name
+    ///             "name": "ScoredCard Builder",
+    ///             "apr": 19.4,                  // Annual Percentage Rate
+    ///             "cardScore": 0.212           // Normalized eligibility score (0-1)
     ///         },
     ///         {
-    ///             "provider": "ScoredCards",
-    ///             "name": "Premium Rewards Card",
-    ///             "apr": 21.9,
-    ///             "cardScore": 0.75
+    ///             "provider": "CSCards",
+    ///             "name": "SuperSaver Card",
+    ///             "apr": 21.4,
+    ///             "cardScore": 0.137
+    ///         },
+    ///         {
+    ///             "provider": "CSCards",
+    ///             "name": "SuperSpender Card",
+    ///             "apr": 19.2,
+    ///             "cardScore": 0.135
     ///         }
     ///     ]
     /// }
     /// </example>
     public class CreditCardResponse
     {
+        /// <summary>
+        /// Indicates whether the response was retrieved from cache or fetched from APIs
+        /// </summary>
+        /// <example>Fetched from APIs</example>
+        [JsonPropertyName("message")]
         public string Message { get; init; } = "";
+
+        /// <summary>
+        /// List of recommended credit cards with their scores
+        /// </summary>
+        [JsonPropertyName("cards")]
         public List<CreditCardRecommendation> Cards { get; init; } = new();
     }
 }

@@ -90,7 +90,7 @@ The application requires the following environment variables:
 
    - API will be available at: http://localhost:5000
    - Swagger UI available at: http://localhost:5000/swagger
-   - Test endpoint: POST http://localhost:5000/api/credit-cards/process
+   - Test endpoint: POST http://localhost:5000/creditcards
 
 6. Running Tests:
    ```bash
