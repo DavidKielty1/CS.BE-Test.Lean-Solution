@@ -31,7 +31,7 @@ jobs:
       - name: Run Tests with Coverage
         run: dotnet test Tests/API.Tests/API.Tests.csproj --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults/Coverage/
 
-      - name: Debug: List All Files After Tests
+      - name: Debug List All Files After Tests
         run: ls -R ./TestResults/ || echo "❌ No TestResults directory found"
 
       - name: Verify Test Coverage
