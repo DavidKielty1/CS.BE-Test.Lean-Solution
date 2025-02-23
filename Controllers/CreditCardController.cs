@@ -62,7 +62,7 @@ namespace API.Controllers
 
                     if (!ModelState.IsValid)
                     {
-                        return BadRequest("The request contained invalid parameters");
+                        return BadRequest(new ErrorResponse { Message = ModelState.Values.First().Errors.First().ErrorMessage });
                     }
 
                     var (cards, fromCache) = await _service.GetRecommendations(request);
@@ -74,7 +74,7 @@ namespace API.Controllers
 
                     if (!cards.Any())
                     {
-                        return BadRequest("No credit card recommendations found");
+                        return BadRequest(new ErrorResponse { Message = "No credit card recommendations found" });
                     }
 
                     return Ok(new CreditCardResponse
@@ -85,12 +85,12 @@ namespace API.Controllers
                 }
                 catch (TimeoutException)
                 {
-                    return StatusCode(503, "Service unavailable");
+                    return StatusCode(503, new ErrorResponse { Message = "Service unavailable" });
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error processing credit card request");
-                    return StatusCode(500, "Internal server error");
+                    return StatusCode(500, new ErrorResponse { Message = "Internal server error" });
                 }
             }
         }
