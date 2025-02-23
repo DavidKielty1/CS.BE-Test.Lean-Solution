@@ -14,6 +14,9 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Restore Dependencies
+        run: dotnet restore --force
+
       - name: Verify Files Exist (Debugging)
         run: ls -R
 
