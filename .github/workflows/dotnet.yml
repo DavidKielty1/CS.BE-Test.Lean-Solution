@@ -28,18 +28,15 @@ jobs:
       - name: Run Tests Without Coverage (Debugging)
         run: dotnet test Tests/API.Tests/API.Tests.csproj --no-build --verbosity normal
 
-      - name: Ensure Coverage Directory Exists
-        run: mkdir -p coverage
-
       - name: Run Tests with Coverage
-        run: dotnet test Tests/API.Tests/API.Tests.csproj --no-build --verbosity normal --collect:"XPlat Code Coverage"
+        run: dotnet test Tests/API.Tests/API.Tests.csproj --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./TestResults/Coverage/
 
-      - name: Debug List All Files After Tests
-        run: ls -R ./coverage || echo "❌ No coverage directory found"
+      - name: Debug: List All Files After Tests
+        run: ls -R ./TestResults/ || echo "❌ No TestResults directory found"
 
       - name: Verify Test Coverage
         run: |
-          COVERAGE_FILE=$(find Tests/API.Tests/TestResults -type f -name "coverage.cobertura.xml" | tail -n 1)
+          COVERAGE_FILE=$(find ./TestResults/Coverage/ -type f -name "coverage.cobertura.xml" | tail -n 1)
           if [ -z "$COVERAGE_FILE" ]; then
             echo "❌ Coverage file not found. Failing build."
             exit 1
@@ -56,7 +53,7 @@ jobs:
       - name: Generate Coverage Report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
         with:
-          reports: "Tests/API.Tests/TestResults/**/coverage.cobertura.xml"
+          reports: "./TestResults/Coverage/coverage.cobertura.xml"
           targetdir: "coveragereport"
           reporttypes: "HtmlInline;Cobertura"
 
