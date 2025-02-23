@@ -1,6 +1,6 @@
 # Credit Card Recommendation API
 
-[![.NET Build and Test](https://github.com/DavidKielty1/reduxII/actions/workflows/dotnet.yml/badge.svg)](https://github.com/DavidKielty1/reduxII/actions/workflows/dotnet.yml)
+[![.NET Build and Test](https://github.com/DavidKielty1/CS.BE-Test.Lean-Solution/actions/workflows/dotnet.yml/badge.svg)](https://github.com/DavidKielty1/CS.BE-Test.Lean-Solution/actions/workflows/dotnet.yml)
 
 API for retrieving and caching credit card recommendations from multiple providers.
 
