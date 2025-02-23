@@ -46,6 +46,59 @@ This structure ensures scalability, maintainability, and efficiency while delive
 - Validation and error handling
 - Test coverage requirements
 
+## Configuration
+
+The application requires the following environment variables:
+
+- `CSCARDS_ENDPOINT`: CSCards API endpoint
+- `SCOREDCARDS_ENDPOINT`: ScoredCards API endpoint
+- `Redis:ConnectionString`: Redis connection string
+
+## Setup
+
+1. Prerequisites:
+
+   - .NET 8.0 SDK
+   - Redis server (local or remote)
+   - Visual Studio 2022 or VS Code
+
+2. Environment Setup:
+
+   - Unzip the project files
+   - Open terminal in project root directory
+   - Run `dotnet restore` to restore dependencies
+
+3. Configuration:
+
+   - Set environment variables or update appsettings.json:
+     ```
+     HTTP_PORT=5000
+     CSCARDS_ENDPOINT=https://api.clearscore.com/api/global/backend-tech-test/v1/cards
+     SCOREDCARDS_ENDPOINT=https://api.clearscore.com/api/global/backend-tech-test/v2/creditcards
+     ```
+   - Update Redis connection string in appsettings.json if not using localhost:6379
+
+4. Running the Application:
+
+   - Using CLI:
+     ```bash
+     dotnet run --project API.csproj
+     ```
+   - Or open API.sln in Visual Studio and press F5
+
+5. Verify Installation:
+
+   - API will be available at: http://localhost:5000
+   - Swagger UI available at: http://localhost:5000/swagger
+   - Test endpoint: POST http://localhost:5000/api/credit-cards/process
+
+6. Running Tests:
+   ```bash
+   dotnet test
+   ```
+
+Note: If Redis is unavailable, the application will still function but without caching.
+
 ## Deployment
 
 This microservice can be Dockerized with a multi-stage Dockerfile for optimized image size. It can be deployed in Kubernetes using a Deployment with multiple replicas, an HPA (Horizontal Pod Autoscaler) for scaling, and a Service for stable networking. Configurations like API endpoints and Redis credentials are managed via ConfigMaps and Secrets. Redis can be deployed as a pod or a managed service, ensuring scalability, fault tolerance, and efficient load balancing.
@@ -56,29 +109,28 @@ This microservice can be Dockerized with a multi-stage Dockerfile for optimized 
 
 - Line Coverage: ≥80%
 - Branch Coverage: ≥80%
-- Method Coverage: ≥80%
 
 #### Test Specific Project/Library:
 
-dotnet test Tests/API.Tests/API.Tests.csproj
+`dotnet test Tests/API.Tests/API.Tests.csproj`
 
 #### Test Specific Test Class:
 
-dotnet test --filter "FullyQualifiedName~ApiServiceTests"
+`dotnet test --filter "FullyQualifiedName~ApiServiceTests"`
 
 #### Test Specific Test Method:
 
-dotnet test --filter "FullyQualifiedName=API.Tests.Services.ApiServiceTests.GetCSCards_ReturnsDeserializedResponse"
+`dotnet test --filter "FullyQualifiedName=API.Tests.Services.ApiServiceTests.GetCSCards_ReturnsDeserializedResponse"`
 
 ### Tests coverage:
 
 #### Run tests with coverage:
 
-rm -rf ./Tests/API.Tests/TestResults/\*
+`rm -rf ./Tests/API.Tests/TestResults/\*`
 
-dotnet test --collect:"XPlat Code Coverage"
+`dotnet test --collect:"XPlat Code Coverage"`
 
-reportgenerator -reports:"./Tests/API.Tests/TestResults/\*/coverage.cobertura.xml" -targetdir:"coveragereport" -reporttypes:Html
+`reportgenerator -reports:"./Tests/API.Tests/TestResults/\*/coverage.cobertura.xml" -targetdir:"coveragereport" -reporttypes:Html`
 
 #### Open Coverage Report:
 
@@ -92,11 +144,3 @@ This project uses GitHub Actions for continuous integration:
 - Test execution
 - Code coverage reporting
 - Coverage thresholds enforcement
-
-## Configuration
-
-The application requires the following environment variables:
-
-- `CSCARDS_ENDPOINT`: CSCards API endpoint
-- `SCOREDCARDS_ENDPOINT`: ScoredCards API endpoint
-- `Redis:ConnectionString`: Redis connection string
