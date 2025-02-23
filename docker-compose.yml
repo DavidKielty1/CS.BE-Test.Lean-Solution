@@ -1,0 +1,43 @@
+#Todo: Implement docker-compose.yml
+
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - Redis__ConnectionString=redis:6379
+      - CSCARDS_ENDPOINT=https://api.clearscore.com/api/global/backend-tech-test/v1/cards
+      - SCOREDCARDS_ENDPOINT=https://api.clearscore.com/api/global/backend-tech-test/v2/creditcards
+    depends_on:
+      - redis
+      - prometheus
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+volumes:
+  grafana-storage:

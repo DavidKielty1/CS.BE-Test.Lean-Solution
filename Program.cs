@@ -3,6 +3,7 @@ using API.Services.Interfaces;
 using API.Settings;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,10 @@ builder.Services.AddSwaggerGen(c =>
 builder.WebHost.UseUrls("http://localhost:5000");
 
 var app = builder.Build();
+
+// Add these lines BEFORE app.UseRouting() and other middleware
+app.UseMetricServer();   // Exposes /metrics endpoint
+app.UseHttpMetrics();    // Collects HTTP metrics
 
 app.UseRouting();
 app.UseAuthorization();

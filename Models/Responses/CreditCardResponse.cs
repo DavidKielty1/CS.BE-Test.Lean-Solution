@@ -24,7 +24,7 @@ namespace API.Models.Responses
         /// <summary>
         /// Indicates whether the response was retrieved from cache or fetched from APIs
         /// </summary>
-        /// <example>Fetched from APIs</example>
+        /// <example>[Fetched from APIs / Retrieved from cache]</example>
         [JsonPropertyName("message")]
         public string Message { get; init; } = "";
 

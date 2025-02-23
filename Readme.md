@@ -144,3 +144,14 @@ This project uses GitHub Actions for continuous integration:
 - Test execution
 - Code coverage reporting
 - Coverage thresholds enforcement
+
+## Monitoring with Prometheus
+
+This API includes built-in Prometheus metrics accessible at `http://localhost:5000/metrics`.
+
+### Available Metrics
+
+- `creditcard_recommendations_requested`: Total number of recommendation requests
+- `creditcard_cache_hits`: Number of cache hits
+- `creditcard_processing_duration_seconds`: Processing time histogram
+- Default ASP.NET metrics (HTTP request durations, counts, etc.)
