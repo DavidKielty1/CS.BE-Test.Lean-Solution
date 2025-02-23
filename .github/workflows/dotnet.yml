@@ -14,15 +14,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Restore Dependencies
-        run: dotnet restore --force
-
-      - name: Verify Files Exist (Debugging)
-        run: ls -R
-
-      - name: Check Current Directory (Debugging)
-        run: pwd && ls -l
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -33,3 +24,27 @@ jobs:
 
       - name: Build Solution
         run: dotnet build API.sln --configuration Debug --no-restore
+
+      - name: Run Tests with Coverage
+        run: dotnet test API.sln --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:Threshold=80 /p:ThresholdType=line,branch,method
+
+      - name: Verify Test Coverage
+        run: |
+          COVERAGE=$(grep -oP '(?<=<coverage line-rate=")[0-9.]+' coverage.cobertura.xml)
+          if (( $(echo "$COVERAGE < 0.8" | bc -l) )); then
+            echo "Test coverage ($COVERAGE) is below 80%. Failing the build."
+            exit 1
+          fi
+
+      - name: Generate Coverage Report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
+        with:
+          reports: "**/coverage.cobertura.xml"
+          targetdir: "coveragereport"
+          reporttypes: "HtmlInline;Cobertura"
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: CoverageReport
+          path: coveragereport
