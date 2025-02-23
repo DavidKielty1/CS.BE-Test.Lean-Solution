@@ -13,6 +13,7 @@ namespace API.Controllers
     /// </summary>
     [ApiController]
     [Route("api/credit-cards")]
+    [Produces("application/json")]
     public class CreditCardController : ControllerBase
     {
         private readonly ICreditCardService _service;
@@ -24,7 +25,18 @@ namespace API.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Process a credit card recommendation request
+        /// </summary>
+        /// <param name="request">Customer details for credit card assessment</param>
+        /// <returns>List of recommended credit cards with eligibility scores</returns>
+        /// <response code="200">Returns the credit card recommendations</response>
+        /// <response code="400">If the request is invalid or no cards found</response>
+        /// <response code="503">If the service is temporarily unavailable</response>
         [HttpPost("process")]
+        [ProducesResponseType(typeof(CreditCardResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> ProcessCreditCard([FromBody] CreditCardRequest request)
         {
             try
