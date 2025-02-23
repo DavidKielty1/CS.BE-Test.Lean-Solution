@@ -16,18 +16,6 @@ namespace API.Models.Responses
     ///             "apr": 19.4,                  // Annual Percentage Rate
     ///             "cardScore": 0.212           // Normalized eligibility score (0-1)
     ///         },
-    ///         {
-    ///             "provider": "CSCards",
-    ///             "name": "SuperSaver Card",
-    ///             "apr": 21.4,
-    ///             "cardScore": 0.137
-    ///         },
-    ///         {
-    ///             "provider": "CSCards",
-    ///             "name": "SuperSpender Card",
-    ///             "apr": 19.2,
-    ///             "cardScore": 0.135
-    ///         }
     ///     ]
     /// }
     /// </example>

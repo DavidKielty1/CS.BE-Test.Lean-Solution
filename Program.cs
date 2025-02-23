@@ -35,7 +35,7 @@ builder.Services.AddSwaggerGen(c =>
 
     // Hide schemas for error responses
     c.UseOneOfForPolymorphism();
-    c.CustomSchemaIds(type => type.FullName);
+    c.CustomSchemaIds(type => type.Name);
 
     // Include XML comments
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
