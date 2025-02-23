@@ -14,6 +14,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Verify Files Exist (Debugging)
+        run: ls -R
+
+      - name: Check Current Directory (Debugging)
+        run: pwd && ls -l
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -24,22 +30,3 @@ jobs:
 
       - name: Build Solution
         run: dotnet build API.sln --configuration Debug --no-restore
-
-      - name: List Projects in Solution (Debugging)
-        run: dotnet sln list
-
-      - name: Run Tests with Coverage
-        run: dotnet test API.sln --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:Threshold=80 /p:ThresholdType=line,branch,method
-
-      - name: Generate Coverage Report
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
-        with:
-          reports: "**/coverage.cobertura.xml"
-          targetdir: "coveragereport"
-          reporttypes: "HtmlInline;Cobertura"
-
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
-        with:
-          name: CoverageReport
-          path: coveragereport

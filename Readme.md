@@ -12,27 +12,27 @@ This API provides credit card recommendations by aggregating data from multiple 
 
 #### Service Breakdown
 
-- CreditCardController
+- **CreditCardController**  
   Handles HTTP requests for credit card recommendations.
   Validates input, calls the service layer, and returns structured responses.
 
-- CreditCardService
+- **CreditCardService**  
   Manages caching and orchestrates recommendation retrieval.
   Fetches fresh data if cache is unavailable and processes scoring logic.
 
-- CardProviderService
+- **CardProviderService**  
   Fetches data from multiple credit card providers in parallel.
   Normalizes different provider response formats into a common structure.
 
-- ApiService
+- **ApiService**  
   Handles HTTP communication with external credit card provider APIs.
   Ensures error handling, request serialization, and response deserialization.
 
-- CardScoreCalculator
+- **CardScoreCalculator**  
   Normalizes credit card eligibility scores from different providers.
   Calculates a weighted sorting score based on eligibility and APR.
-  .
-- RedisService  
+
+- **RedisService**  
   Implements caching for faster response times and reduced API calls.
   Stores and retrieves credit card recommendations using Redis.
 
@@ -52,7 +52,7 @@ This microservice can be Dockerized with a multi-stage Dockerfile for optimized 
 
 ## Testing
 
-## Code Coverage
+### Code Coverage
 
 - Line Coverage: ≥80%
 - Branch Coverage: ≥80%
