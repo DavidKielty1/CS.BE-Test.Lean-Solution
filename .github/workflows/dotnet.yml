@@ -33,9 +33,9 @@ jobs:
 
       - name: Verify Test Coverage
         run: |
-          COVERAGE_FILE=$(find Tests/API.Tests/TestResults -name "coverage.cobertura.xml" | head -n 1)
-          if [ -z "$COVERAGE_FILE" ]; then
-            echo "❌ Coverage file not found. Failing build."
+          COVERAGE_FILE="./coverage/cobertura.xml"
+          if [ ! -f "$COVERAGE_FILE" ]; then
+            echo "❌ Coverage file not found at $COVERAGE_FILE. Failing build."
             exit 1
           fi
           echo "✅ Found coverage file at $COVERAGE_FILE"
